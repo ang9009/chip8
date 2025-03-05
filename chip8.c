@@ -4,6 +4,11 @@
 
 #include "SDL.h"
 
+
+typedef struct {
+    SDL_Window *window;
+} sdl;
+
 /**
  * Initializes the SDL library with vidoe, audio, and timer subsystems.
  */
