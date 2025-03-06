@@ -13,6 +13,7 @@ typedef struct {
 
 typedef struct {
     int scale; // The scaling factor of each pixel
+    uint32_t pixel_color; // The color of each pixel in the foreground
 } config;
 
 // Initializes the SDL library with vidoe, audio, and timer subsystems.
@@ -43,6 +44,11 @@ bool init_sdl(sdl *sdl, config config) {
     return true;
 }
 
+// Sets up the renderer with the specified pixel color.
+bool setup_renderer(config config) {
+    // Convert from hex to RGB
+}
+
 // Cleans up all sdl related processes.
 void cleanup(const sdl sdl) {
     SDL_DestroyWindow(sdl.window);
@@ -55,15 +61,15 @@ int main(int argc, char **argv) {
     (void) argv;
 
     sdl sdl = {};
-    config config = {8};
+    config config = {8, 0xFF};
     
     // Initialize SDL
     if (!init_sdl(&sdl, config)) {
         exit(EXIT_FAILURE);
     }
-
     
     while (true) {
+        // Get rid of this lols
         SDL_SetRenderDrawColor(sdl.renderer, 255, 0, 0, 255);
         SDL_RenderClear(sdl.renderer);
 
