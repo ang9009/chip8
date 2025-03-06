@@ -55,16 +55,26 @@ int main(int argc, char **argv) {
     (void) argv;
 
     sdl sdl = {};
-    config config = {64, 32, 4};
+    config config = {8};
     
     // Initialize SDL
     if (!init_sdl(&sdl, config)) {
         exit(EXIT_FAILURE);
     }
 
-    SDL_RenderClear(sdl.renderer);
-
+    
     while (true) {
+        SDL_SetRenderDrawColor(sdl.renderer, 255, 0, 0, 255);
+        SDL_RenderClear(sdl.renderer);
+
+        SDL_Delay(1000);
+        SDL_RenderPresent(sdl.renderer);
+
+        SDL_SetRenderDrawColor(sdl.renderer, 0, 0, 0, 255);
+        SDL_RenderClear(sdl.renderer);
+
+        SDL_Delay(1000);
+        SDL_RenderPresent(sdl.renderer);
     }
 
     cleanup(sdl);
