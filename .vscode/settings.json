@@ -3,6 +3,9 @@
         "stdio.h": "c",
         "stdbool.h": "c",
         "stdint.h": "c",
-        "components.h": "c"
+        "components.h": "c",
+        "stdlib.h": "c",
+        "sdl.h": "c",
+        "init.h": "c"
     }
 }

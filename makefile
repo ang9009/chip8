@@ -1,5 +1,5 @@
-CFLAGS=-std=c17 -Wall -Wextra -Werror
+CFLAGS=-std=c99 -Wall -Wextra -Werror
 main:
-	gcc main.c -o main $(CFLAGS) `sdl2-config --cflags --libs`
+	gcc main.c -o ./out/main $(CFLAGS) `sdl2-config --cflags --libs`
 clean:
 	rm main
