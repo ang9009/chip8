@@ -5,7 +5,14 @@
 #define SCREEN_W 64
 #define SCREEN_H 32
 
-// Components
+// chip8 state
+typedef enum {
+    RUNNING,
+    PAUSED,
+    STOPPED,
+} state;
+
+// chip8 components
 typedef struct {
     uint8_t ram[4000];
     bool display[SCREEN_W][SCREEN_H];
@@ -16,4 +23,5 @@ typedef struct {
     uint8_t delay_timer; 
     uint8_t sound_timer;
     uint8_t V[16]; // Registers
+    state state;
 } chip8;

@@ -3,7 +3,7 @@
 #include <stdbool.h>
 
 #include "SDL2/SDL.h"
-#include "components.h"
+#include "chip8.h"
 
 
 typedef struct {
@@ -12,7 +12,7 @@ typedef struct {
 } sdl;
 
 typedef struct {
-    int scale; // The scaling factor of each pixel
+    uint32_t scale; // The scaling factor of each pixel
     uint32_t pixel_color; // The color of each pixel in the foreground
 } config;
 
@@ -44,9 +44,15 @@ bool init_sdl(sdl *sdl, config config) {
     return true;
 }
 
-// Sets up the renderer with the specified pixel color.
-bool setup_renderer(config config) {
-    // Convert from hex to RGB
+void clear_screen(SDL_Renderer *renderer) {    
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderClear(renderer);
+
+    // const u_int8_t r = (config.pixel_color) >> 24 & 0xFF;
+    // const u_int8_t g = (config.pixel_color) >> 16 & 0xFF;
+    // const u_int8_t b = (config.pixel_color) >> 8 & 0xFF;
+    // const u_int8_t a = (config.pixel_color) & 0xFF;
+    // SDL_SetRenderDrawColor(renderer, r, g, b, a);
 }
 
 // Cleans up all sdl related processes.
@@ -56,31 +62,41 @@ void cleanup(const sdl sdl) {
     SDL_Quit();
 }
 
+void init_chip8(chip8 *chip8) {
+    chip8->state = RUNNING;
+}
+
+void handle_input(chip8 *chip8) {
+    SDL_Event event;
+
+    while (SDL_PollEvent(&event)) {
+        switch (event.type) {
+            case SDL_QUIT:
+                SDL_Log("Window was closed, stopping program");
+                chip8->state = STOPPED;
+                break;
+        }
+    }
+}
+
 int main(int argc, char **argv) {
     (void) argc;
     (void) argv;
 
     sdl sdl = {};
-    config config = {8, 0xFF};
+    config config = {8, 0xfffc7f};
     
     // Initialize SDL
     if (!init_sdl(&sdl, config)) {
         exit(EXIT_FAILURE);
     }
+
+    chip8 chip8 = {};
+    init_chip8(&chip8);
     
-    while (true) {
-        // Get rid of this lols
-        SDL_SetRenderDrawColor(sdl.renderer, 255, 0, 0, 255);
-        SDL_RenderClear(sdl.renderer);
-
-        SDL_Delay(1000);
-        SDL_RenderPresent(sdl.renderer);
-
-        SDL_SetRenderDrawColor(sdl.renderer, 0, 0, 0, 255);
-        SDL_RenderClear(sdl.renderer);
-
-        SDL_Delay(1000);
-        SDL_RenderPresent(sdl.renderer);
+    while (chip8.state != STOPPED) {
+        handle_input(&chip8);
+        clear_screen(sdl.renderer);
     }
 
     cleanup(sdl);
