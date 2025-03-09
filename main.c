@@ -22,11 +22,11 @@ int main(int argc, char **argv) {
     
     SDL_Log("Rom file: %s, instructions/sec: %d", flags.rom_file, flags.insns_per_sec);
     // Initialize config object, then SDL
-    if (!init_config(&config, flags.insns_per_sec) || !init_sdl(&sdl, config)) {
+    if (!init_config(&config, flags.insns_per_sec) || !init_sdl(&sdl, config, flags.rom_file)) {
         exit(EXIT_FAILURE);
     }
 
-    chip8 chip8 = {};
+    chip8_t chip8 = {};
     init_chip8(&chip8);
     
     while (chip8.state != STOPPED) {

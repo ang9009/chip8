@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-// Screen dimensions
+// Chip8 specs
 #define SCREEN_W 64
 #define SCREEN_H 32
 
@@ -13,11 +13,11 @@ typedef enum {
     RUNNING,
     PAUSED,
     STOPPED,
-} state;
+} state_t;
 
 // chip8 components
 typedef struct {
-    uint8_t ram[4000];
+    uint8_t ram[4096];
     bool display[SCREEN_W][SCREEN_H];
     uint16_t I;
     uint16_t stack[12]; 
@@ -26,7 +26,7 @@ typedef struct {
     uint8_t delay_timer; 
     uint8_t sound_timer;
     uint8_t V[16]; // Registers
-    state state;
-} chip8;
+    state_t state;
+} chip8_t;
 
 #endif

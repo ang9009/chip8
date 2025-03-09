@@ -26,7 +26,7 @@ typedef struct {
 } config_t;
 
 // Initializes the SDL library with video, audio, and timer subsystems
-bool init_sdl(sdl_t *sdl, config_t config);
+bool init_sdl(sdl_t *sdl, config_t config, char *rom_name);
 
 // Clears the screen
 void clear_screen(SDL_Renderer *renderer);
@@ -35,13 +35,13 @@ void clear_screen(SDL_Renderer *renderer);
 void cleanup_sdl(const sdl_t sdl);
 
 // Initializes the chip8 structure
-void init_chip8(chip8 *chip8);
+void init_chip8(chip8_t *chip8);
 
 // Intializes the config object. This should be called before the config object is used
 bool init_config(config_t *config, uint32_t insns_per_sec);
 
 // Handles user input
-void handle_input(chip8 *chip8);
+void handle_input(chip8_t *chip8);
 
 // Gets flags from the command line
 flags_t get_flags(int argc, char **argv);
