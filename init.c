@@ -52,13 +52,14 @@ void init_chip8(chip8 *chip8) {
 }
 
 // Intializes the config object. This should be called before the config object is used
-bool init_config(config_t *config, char *insns_per_sec) {
+bool init_config(config_t *config, uint32_t insns_per_sec) {
     // Set defaults
     *config = (config_t){
         .scale = 8,
         .pixel_color = 0xfffc7f,
         insns_per_sec = insns_per_sec ? insns_per_sec : 700,
     };
+
     return true;
 }
 
@@ -80,17 +81,29 @@ void handle_input(chip8 *chip8) {
 flags_t get_flags(int argc, char **argv) {
     flags_t flags = {0};
 
-    for (int i = 0; i < argc; i++) {
+    for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], ROM_FLAG) == 0) {
             if (i + 1 < argc) {
                 flags.rom_file = argv[i + 1];
             } else {
                 SDL_Log("Please specify a rom file: %s <rom>", ROM_FLAG);
             }
+            i++; // Skip argument value
         } else if (strcmp(argv[i], INSNS_FLAG) == 0) {
             if (i + 1 < argc) {
-                flags.insns_per_sec = strtol(argv[i + 1], 10);
+                flags.insns_per_sec = strtol(argv[i + 1], NULL, 10);
+            } else {
+                SDL_Log(
+                    "Please specify the number of instructions/sec: %s <insns_per_sec>", 
+                    INSNS_FLAG
+                );
             }
+            i++;
+        } else {
+            SDL_Log("Unknown flag: %s.", argv[i]);
+            exit(EXIT_FAILURE);
         }
     }
+
+    return flags;
 }

@@ -6,6 +6,7 @@
         "components.h": "c",
         "stdlib.h": "c",
         "sdl.h": "c",
-        "init.h": "c"
+        "init.h": "c",
+        "chip8.h": "c"
     }
 }

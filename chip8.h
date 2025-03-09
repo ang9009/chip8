@@ -1,3 +1,6 @@
+#ifndef CHIP8_H_INCLUDED
+#define CHIP8_H_INCLUDED
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -25,3 +28,5 @@ typedef struct {
     uint8_t V[16]; // Registers
     state state;
 } chip8;
+
+#endif

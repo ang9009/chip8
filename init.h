@@ -2,6 +2,7 @@
 #define INIT_H_INCLUDED
 
 #include "SDL2/SDL.h"
+#include "chip8.h"
 
 // Command line flags
 #define ROM_FLAG "--rom"
@@ -37,13 +38,12 @@ void cleanup_sdl(const sdl_t sdl);
 void init_chip8(chip8 *chip8);
 
 // Intializes the config object. This should be called before the config object is used
-bool init_config(config_t *config, char *insns_per_sec);
+bool init_config(config_t *config, uint32_t insns_per_sec);
 
 // Handles user input
 void handle_input(chip8 *chip8);
 
 // Gets flags from the command line
 flags_t get_flags(int argc, char **argv);
-
 
 #endif
