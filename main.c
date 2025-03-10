@@ -41,6 +41,22 @@ int main(int argc, char **argv) {
     while (chip8.state != STOPPED) {
         handle_input(&chip8);
         clear_screen(sdl.renderer);
+
+        const uint64_t start_count = SDL_GetPerformanceCounter();
+        // We need to execute (insns per sec / 60) insns for every refresh to achieve 60Hz
+        // (insns per sec / 60) * 60 refreshes per sec = insns per sec as desired
+        for (int i = 0; i < flags.insns_per_sec / 60; i++) {
+            // Fetch decode execute helper
+        }
+        const uint64_t end_count = SDL_GetPerformanceCounter();
+        const uint64_t count_per_sec = SDL_GetPerformanceFrequency();
+        const double dt_ms = (((double)(end_count - start_count) / count_per_sec)) * 1000;
+
+        // 1 / 60 = 16.67ms. We need to delay each frame by at least this amount to achieve 60hz
+        const uint32_t delay = dt_ms > 16.67 ? 0 : 16.67 - dt_ms;
+        SDL_Delay(delay);
+
+        // Refresh window if needed
     }
 
     cleanup_sdl(sdl);

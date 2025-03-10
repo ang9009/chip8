@@ -27,6 +27,7 @@ typedef struct {
     uint8_t sound_timer;
     uint8_t V[16]; // Registers
     state_t state;
+    bool update_screen; // Indicates if SDL should update the screen on the next tick
 } chip8_t;
 
 #endif
