@@ -101,9 +101,9 @@ bool read_rom_into_ram(chip8_t *chip8, char *rom_name, size_t entrypoint) {
         SDL_Log("Could not find end of rom file \"%s\"", rom_name);
         return false;
     }
-    rewind(file_ptr);
-
     const long file_size = ftell(file_ptr);
+    rewind(file_ptr);
+    
     if (file_size == -1L) {
         SDL_Log("Failed to get size of rom file \"%s\"", rom_name);
         return false;
