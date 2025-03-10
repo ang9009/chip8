@@ -9,7 +9,7 @@
 #define INSNS_FLAG "--insns-per-sec"
 
 typedef struct {
-    char *rom_file; // The name of the rom file
+    char *rom_name; // The name of the rom file
     uint32_t insns_per_sec; // The number of instructions per second (hz). This is mandatory.
 } flags_t;
 
@@ -26,7 +26,7 @@ typedef struct {
 } config_t;
 
 // Initializes the SDL library with video, audio, and timer subsystems
-bool init_sdl(sdl_t *sdl, config_t config, char *rom_name);
+bool init_sdl(sdl_t *sdl, config_t config);
 
 // Clears the screen
 void clear_screen(SDL_Renderer *renderer);
@@ -35,15 +35,14 @@ void clear_screen(SDL_Renderer *renderer);
 void cleanup_sdl(const sdl_t sdl);
 
 // Initializes the chip8 structure
-void init_chip8(chip8_t *chip8);
-
-// Intializes the config object. This should be called before the config object is used
-bool init_config(config_t *config, uint32_t insns_per_sec);
+void init_chip8(chip8_t *chip8, char *rom_name);
 
 // Handles user input
 void handle_input(chip8_t *chip8);
 
 // Gets flags from the command line
 flags_t get_flags(int argc, char **argv);
+
+bool read_rom_into_ram(chip8_t *chip8, char *rom_name, size_t entrypoint);
 
 #endif

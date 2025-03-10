@@ -17,17 +17,21 @@ int main(int argc, char **argv) {
     }
 
     sdl_t sdl = {0};
-    config_t config = {0};
     flags_t flags = get_flags(argc, argv);
+    config_t config = {
+        .scale = 8,
+        .pixel_color = 0xfffc7f,
+        .insns_per_sec = flags.insns_per_sec ? flags.insns_per_sec : 700,
+    };
     
-    SDL_Log("Rom file: %s, instructions/sec: %d", flags.rom_file, flags.insns_per_sec);
+    SDL_Log("Rom file: %s, instructions/sec: %d", flags.rom_name, flags.insns_per_sec);
     // Initialize config object, then SDL
-    if (!init_config(&config, flags.insns_per_sec) || !init_sdl(&sdl, config, flags.rom_file)) {
+    if (!init_sdl(&sdl, config)) {
         exit(EXIT_FAILURE);
     }
 
-    chip8_t chip8 = {};
-    init_chip8(&chip8);
+    chip8_t chip8 = {0};
+    init_chip8(&chip8, flags.rom_name);
     
     while (chip8.state != STOPPED) {
         handle_input(&chip8);

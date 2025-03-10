@@ -6,7 +6,7 @@
 #include "chip8.h"
 
 // Initializes the SDL library with video, audio, and timer subsystems
-bool init_sdl(sdl_t *sdl, config_t config, char *rom_name) {
+bool init_sdl(sdl_t *sdl, config_t config) {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) != 0) {
         SDL_Log("Unable to initialize SDL: %s\n", SDL_GetError());
         return false;
@@ -46,8 +46,11 @@ void cleanup_sdl(const sdl_t sdl) {
     SDL_Quit();
 }
 
-// Initializes the chip8 struct
-void init_chip8(chip8_t *chip8) {
+/**
+ *  Initializes the chip8 struct. Clears all values in struct (if there were any), then
+ *  copies fonts to very beginning of RAM.
+ */ 
+void init_chip8(chip8_t *chip8, char *rom_name) {
     const uint8_t font[] = {
         0xF0, 0x90, 0x90, 0x90, 0xF0,   // 0   
         0x20, 0x60, 0x20, 0x20, 0x70,   // 1  
@@ -67,49 +70,52 @@ void init_chip8(chip8_t *chip8) {
         0xF0, 0x80, 0xF0, 0x80, 0x80,   // F
     };
     
-    // memset();
+    memset(chip8, 0, sizeof(chip8_t));
+    memcpy(&(chip8->ram[0x050]), font, sizeof(font)); // Copy fonts into RAM
+
+    const size_t entrypoint = 0x200;
+    if (!read_rom_into_ram(chip8, rom_name, entrypoint)) {
+        exit(EXIT_FAILURE);
+    }
 
     chip8->state = RUNNING;
 }
 
-// Reads a specified ROM into the RAM of the given chip8 struct at the given RAM entrypoint
-void read_rom_into_ram(chip8_t *chip8, char *rom_name, uint8_t entrypoint) {
-    // ! Lots of things that are wrong with this lol use reference please
+/**
+ * Reads a specified ROM into the RAM of the given chip8 struct at the given RAM entrypoint.
+ * Returns whether the operation was successful, and logs an error message if it was not.
+ */
+bool read_rom_into_ram(chip8_t *chip8, char *rom_name, size_t entrypoint) {
+    if (entrypoint > sizeof(chip8->ram)) {
+        SDL_Log("Invalid RAM access");
+        return false;
+    }
+
     FILE *file_ptr = fopen(rom_name, "r");
     if (file_ptr == NULL) {
         SDL_Log("Could not open rom file \"%s\"", rom_name);
-        exit(EXIT_FAILURE);
+        return false;
     }
 
     if (fseek(file_ptr, 0, SEEK_END) != 0) {
         SDL_Log("Could not find end of rom file \"%s\"", rom_name);
-        exit(EXIT_FAILURE);
+        return false;
     }
     rewind(file_ptr);
 
-    long file_size = ftell(file_ptr);
+    const long file_size = ftell(file_ptr);
     if (file_size == -1L) {
         SDL_Log("Failed to get size of rom file \"%s\"", rom_name);
-        exit(EXIT_FAILURE);
-    } else if (file_size > sizeof(chip8->ram) - entrypoint) {
+        return false;
+    } else if ((size_t) file_size > sizeof(chip8->ram) - entrypoint) {
         SDL_Log("File size of rom \"%s\" is too big (%ld bytes)", rom_name, file_size);
+        return false;
     }
 
-    size_t read_size = fread(chip8->ram[entrypoint], sizeof(uint8_t), file_size, file_ptr);
-    if (read_size != file_size) {
+    if (fread(&(chip8->ram[entrypoint]), file_size, 1, file_ptr) != 1) {
         SDL_Log("Failed to read all contents of rom file \"%s\" into RAM", rom_name);
+        return false;
     }
-}
-
-// Intializes the config struct. This should be called before the config struct is used
-bool init_config(config_t *config, uint32_t insns_per_sec) {
-    // Set defaults
-    *config = (config_t){
-        .scale = 8,
-        .pixel_color = 0xfffc7f,
-        insns_per_sec = insns_per_sec ? insns_per_sec : 700,
-    };
-
     return true;
 }
 
@@ -135,7 +141,7 @@ flags_t get_flags(int argc, char **argv) {
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], ROM_FLAG) == 0) {
             if (i + 1 < argc) {
-                flags.rom_file = argv[i + 1];
+                flags.rom_name = argv[i + 1];
             } else {
                 SDL_Log("Please specify a rom file: %s <rom>", ROM_FLAG);
                 exit(EXIT_FAILURE);
