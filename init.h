@@ -35,13 +35,13 @@ void clear_screen(SDL_Renderer *renderer);
 void cleanup_sdl(const sdl_t sdl);
 
 // Initializes the chip8 structure
-void init_chip8(chip8_t *chip8, char *rom_name);
+bool init_chip8(chip8_t *chip8, char *rom_name);
 
 // Handles user input
 void handle_input(chip8_t *chip8);
 
 // Gets flags from the command line
-flags_t get_flags(int argc, char **argv);
+bool init_flags(flags_t *flags, int argc, char **argv);
 
 bool read_rom_into_ram(chip8_t *chip8, char *rom_name, size_t entrypoint);
 

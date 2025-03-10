@@ -48,9 +48,9 @@ void cleanup_sdl(const sdl_t sdl) {
 
 /**
  *  Initializes the chip8 struct. Clears all values in struct (if there were any), then
- *  copies fonts to very beginning of RAM.
+ *  copies fonts to very beginning of RAM. Returns whether initialization was successful.
  */ 
-void init_chip8(chip8_t *chip8, char *rom_name) {
+bool init_chip8(chip8_t *chip8, char *rom_name) {
     const uint8_t font[] = {
         0xF0, 0x90, 0x90, 0x90, 0xF0,   // 0   
         0x20, 0x60, 0x20, 0x20, 0x70,   // 1  
@@ -71,14 +71,19 @@ void init_chip8(chip8_t *chip8, char *rom_name) {
     };
     
     memset(chip8, 0, sizeof(chip8_t));
-    memcpy(&(chip8->ram[0x050]), font, sizeof(font)); // Copy fonts into RAM
 
+    // Copy fonts into RAM, read ROM into RAM
+    memcpy(&(chip8->ram[0x050]), font, sizeof(font)); 
     const size_t entrypoint = 0x200;
     if (!read_rom_into_ram(chip8, rom_name, entrypoint)) {
-        exit(EXIT_FAILURE);
+        return false;
     }
 
+    chip8->PC = entrypoint;
     chip8->state = RUNNING;
+    chip8->SP = &chip8->stack[0];
+
+    return true;
 }
 
 /**
@@ -103,7 +108,7 @@ bool read_rom_into_ram(chip8_t *chip8, char *rom_name, size_t entrypoint) {
     }
     const long file_size = ftell(file_ptr);
     rewind(file_ptr);
-    
+
     if (file_size == -1L) {
         SDL_Log("Failed to get size of rom file \"%s\"", rom_name);
         return false;
@@ -129,19 +134,16 @@ void handle_input(chip8_t *chip8) {
                 SDL_Log("Window was closed, stopping program");
                 chip8->state = STOPPED;
                 break;
-            // ! Incomplete
         }
     }
 }
 
 // Gets flags from the command line
-flags_t get_flags(int argc, char **argv) {
-    flags_t flags = {0};
-
+bool init_flags(flags_t *flags, int argc, char **argv) {
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], ROM_FLAG) == 0) {
             if (i + 1 < argc) {
-                flags.rom_name = argv[i + 1];
+                flags->rom_name = argv[i + 1];
             } else {
                 SDL_Log("Please specify a rom file: %s <rom>", ROM_FLAG);
                 exit(EXIT_FAILURE);
@@ -149,7 +151,7 @@ flags_t get_flags(int argc, char **argv) {
             i++; // Skip flag value
         } else if (strcmp(argv[i], INSNS_FLAG) == 0) {
             if (i + 1 < argc) {
-                flags.insns_per_sec = strtol(argv[i + 1], NULL, 10);
+                flags->insns_per_sec = strtol(argv[i + 1], NULL, 10);
             } else {
                 SDL_Log(
                     "Please specify the number of instructions/sec: %s <insns_per_sec>", 

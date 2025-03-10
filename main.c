@@ -17,7 +17,10 @@ int main(int argc, char **argv) {
     }
 
     sdl_t sdl = {0};
-    flags_t flags = get_flags(argc, argv);
+    flags_t flags = {0};
+    if (!init_flags(&flags, argc, argv)) {
+        exit(EXIT_FAILURE);
+    }
     config_t config = {
         .scale = 8,
         .pixel_color = 0xfffc7f,
@@ -31,7 +34,9 @@ int main(int argc, char **argv) {
     }
 
     chip8_t chip8 = {0};
-    init_chip8(&chip8, flags.rom_name);
+    if (!init_chip8(&chip8, flags.rom_name)) {
+        exit(EXIT_FAILURE);
+    }
     
     while (chip8.state != STOPPED) {
         handle_input(&chip8);
