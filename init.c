@@ -25,25 +25,28 @@ bool init_sdl(sdl_t *sdl, config_t config) {
         return false;
     }
 
+    // Open audio device
+    const char *audio_dev_name;
+    for (int i = 0; i < SDL_GetNumAudioDevices(0); i++) {
+        const char *name = SDL_GetAudioDeviceName(i, 0);
+        if (name != NULL) {
+            audio_dev_name = name;
+        }
+    }
+    if (audio_dev_name == NULL) {
+        SDL_Log("Could not find valid audio device: %s\n", SDL_GetError());
+        return false;
+    }
+    // ! Incomplete
+    // sdl->audio_dev_id = SDL_OpenAudioDevice(audio_dev_name, 0, )
+
+    // Initialize renderer
     sdl->renderer = SDL_CreateRenderer(sdl->window, -1, SDL_RENDERER_ACCELERATED);
     if (!sdl->renderer) {
         SDL_Log("Could not initialize renderer: %s\n", SDL_GetError());
     }
 
     return true;
-}
-
-// Clears the screen
-void clear_screen(SDL_Renderer *renderer) {    
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-    SDL_RenderClear(renderer);
-}
-
-// Cleans up all sdl related processes
-void cleanup_sdl(const sdl_t sdl) {
-    SDL_DestroyWindow(sdl.window);
-    SDL_DestroyRenderer(sdl.renderer);
-    SDL_Quit();
 }
 
 /**

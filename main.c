@@ -28,7 +28,6 @@ int main(int argc, char **argv) {
     };
     
     SDL_Log("Rom file: %s, instructions/sec: %d", flags.rom_name, flags.insns_per_sec);
-    // Initialize config object, then SDL
     if (!init_sdl(&sdl, config)) {
         exit(EXIT_FAILURE);
     }
@@ -57,8 +56,20 @@ int main(int argc, char **argv) {
         SDL_Delay(delay);
 
         // Refresh window if needed
+        if (chip8.update_screen) {
+            clear_screen(sdl.renderer);
+        }
+
+        // Update timer values
+        if (chip8.delay_timer > 0) {
+            chip8.delay_timer--;
+        }
+        if (chip8.sound_timer > 0) {
+            chip8.sound_timer--;
+        }
     }
 
     cleanup_sdl(sdl);
     exit(EXIT_SUCCESS);
+    return 0; // Idk
 }

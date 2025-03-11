@@ -17,6 +17,7 @@ typedef struct {
 typedef struct {
     SDL_Window *window;
     SDL_Renderer *renderer;
+    SDL_AudioDeviceID audio_dev_id;
 } sdl_t;
 
 typedef struct {
@@ -27,12 +28,6 @@ typedef struct {
 
 // Initializes the SDL library with video, audio, and timer subsystems
 bool init_sdl(sdl_t *sdl, config_t config);
-
-// Clears the screen
-void clear_screen(SDL_Renderer *renderer);
-
-// Cleans up all sdl related processes
-void cleanup_sdl(const sdl_t sdl);
 
 // Initializes the chip8 structure
 bool init_chip8(chip8_t *chip8, char *rom_name);

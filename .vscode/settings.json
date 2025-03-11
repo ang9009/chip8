@@ -8,5 +8,6 @@
         "sdl.h": "c",
         "init.h": "c",
         "chip8.h": "c"
-    }
+    },
+    "makefile.configureOnOpen": true
 }
