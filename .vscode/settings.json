@@ -5,7 +5,7 @@
         "stdint.h": "c",
         "components.h": "c",
         "stdlib.h": "c",
-        "sdl.h": "c",
+        "render.h": "c",
         "init.h": "c",
         "chip8.h": "c"
     },

@@ -18,7 +18,7 @@ typedef enum {
 // chip8 components
 typedef struct {
     uint8_t ram[4096];
-    bool display[SCREEN_W][SCREEN_H];
+    bool display[SCREEN_H][SCREEN_W];
     uint16_t I;
     uint16_t stack[12]; 
     uint16_t *SP; // Stack pointer

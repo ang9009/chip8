@@ -31,19 +31,21 @@ bool init_sdl(sdl_t *sdl, config_t config) {
         const char *name = SDL_GetAudioDeviceName(i, 0);
         if (name != NULL) {
             audio_dev_name = name;
+            break;
         }
     }
     if (audio_dev_name == NULL) {
         SDL_Log("Could not find valid audio device: %s\n", SDL_GetError());
         return false;
     }
-    // ! Incomplete
+    // ! Audio incomplete
     // sdl->audio_dev_id = SDL_OpenAudioDevice(audio_dev_name, 0, )
 
     // Initialize renderer
     sdl->renderer = SDL_CreateRenderer(sdl->window, -1, SDL_RENDERER_ACCELERATED);
     if (!sdl->renderer) {
         SDL_Log("Could not initialize renderer: %s\n", SDL_GetError());
+        return false;
     }
 
     return true;

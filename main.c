@@ -4,9 +4,11 @@
 #include "SDL2/SDL.h"
 #include "chip8.h"
 #include "init.h"
+#include "render.h"
+#include "cycle.h"
 
 int main(int argc, char **argv) {
-    if (argc < 2) {
+    if (argc < 5) {
         SDL_Log(
             "Invalid no. of arguments. Usage: %s %s <rom_file> %s <hz>", 
             argv[0],
@@ -22,7 +24,7 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
     config_t config = {
-        .scale = 8,
+        .scale = 6,
         .pixel_color = 0xfffc7f,
         .insns_per_sec = flags.insns_per_sec ? flags.insns_per_sec : 700,
     };
@@ -36,16 +38,19 @@ int main(int argc, char **argv) {
     if (!init_chip8(&chip8, flags.rom_name)) {
         exit(EXIT_FAILURE);
     }
+
+    // Set background to black
+    // clear_screen(sdl.renderer);
     
     while (chip8.state != STOPPED) {
         handle_input(&chip8);
-        clear_screen(sdl.renderer);
 
         const uint64_t start_count = SDL_GetPerformanceCounter();
         // We need to execute (insns per sec / 60) insns for every refresh to achieve 60Hz
         // (insns per sec / 60) * 60 refreshes per sec = insns per sec as desired
-        for (int i = 0; i < flags.insns_per_sec / 60; i++) {
+        for (int i = 0; i < ((int) flags.insns_per_sec) / 60; i++) {
             // Fetch decode execute helper
+            execute_cycle(&chip8, true);
         }
         const uint64_t end_count = SDL_GetPerformanceCounter();
         const uint64_t count_per_sec = SDL_GetPerformanceFrequency();
@@ -57,7 +62,8 @@ int main(int argc, char **argv) {
 
         // Refresh window if needed
         if (chip8.update_screen) {
-            clear_screen(sdl.renderer);
+            update_screen(chip8, config, &sdl);
+            chip8.update_screen = false;
         }
 
         // Update timer values
