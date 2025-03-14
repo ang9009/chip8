@@ -2,7 +2,6 @@
 #include "SDL2/SDL.h"
 
 // Updates the display in the chip8 struct.
-// ! There's something wrong with this and/or the render logic
 void update_display(chip8_t *chip8, uint8_t X, uint8_t Y, uint8_t N) {
     int x_coord = chip8->V[X] % SCREEN_W;
     int y_coord = chip8->V[Y] % SCREEN_H;
@@ -52,14 +51,30 @@ bool execute_cycle(chip8_t *chip8, bool debug) {
 
     switch (opcode >> 12 & 0xF) {
         case 0x0:
-            if (opcode == 0x00E0) {
-                if (debug) SDL_Log("Clear screen");
-                memset(&chip8->display[0], 0, sizeof chip8->display);
-                chip8->update_screen = true;
+            switch (opcode) {
+                case 0x00E0:
+                    if (debug) SDL_Log("Clear screen");
+                    memset(&chip8->display[0], 0, sizeof chip8->display);
+                    chip8->update_screen = true;
+                    break;
+                case 0x00EE:
+                    if (debug) SDL_Log("Return from subroutine");
+                    chip8->PC = *chip8->SP;
+                    *chip8->SP--; // Pop address from stack
+                    break;
+                default: 
+                    SDL_Log("Unknown instruction: %x", opcode);
+                    return false;
             }
             break;
         case 0x1:
             if (debug) SDL_Log("Jump to 0x%04X", NNN);
+            chip8->PC = NNN;
+            break;
+        case 0x2:
+            if (debug) SDL_Log("Push PC to stack, call subroutine at 0x%04X", NNN);
+            *chip8->SP++;
+            *chip8->SP = chip8->PC; // Push PC to stack
             chip8->PC = NNN;
             break;
         case 0x6:
