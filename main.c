@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
     }
 
     // Set background to black
-    // clear_screen(sdl.renderer);
+    clear_screen(sdl.renderer);
     
     while (chip8.state != STOPPED) {
         handle_input(&chip8);

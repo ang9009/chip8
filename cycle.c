@@ -41,7 +41,7 @@ void update_display(chip8_t *chip8, uint8_t X, uint8_t Y, uint8_t N) {
 bool execute_cycle(chip8_t *chip8, bool debug) {
     // Fetch insn from memory
     const uint16_t opcode = (chip8->ram[chip8->PC] << 8) | (chip8->ram[chip8->PC + 1]);
-    chip8->PC += 2;
+    chip8->PC += 2; // Increment PC by 2 to get to next instruction
 
     const uint8_t X = (opcode >> 8) & 0xF; // Second nibble
     const uint8_t Y = (opcode >> 4) & 0xF; // Third nibble
@@ -60,7 +60,7 @@ bool execute_cycle(chip8_t *chip8, bool debug) {
                 case 0x00EE:
                     if (debug) SDL_Log("Return from subroutine");
                     chip8->PC = *chip8->SP;
-                    *chip8->SP--; // Pop address from stack
+                    chip8->SP--; // Pop address from stack
                     break;
                 default: 
                     SDL_Log("Unknown instruction: %x", opcode);
@@ -73,9 +73,27 @@ bool execute_cycle(chip8_t *chip8, bool debug) {
             break;
         case 0x2:
             if (debug) SDL_Log("Push PC to stack, call subroutine at 0x%04X", NNN);
-            *chip8->SP++;
+            chip8->SP++;
             *chip8->SP = chip8->PC; // Push PC to stack
             chip8->PC = NNN;
+            break;
+        case 0x3:
+            if (chip8->V[X] == NN) {
+                if (debug) SDL_Log("Skip next instruction");
+                chip8->PC += 2;
+            }
+            break;
+        case 0x4:
+            if (chip8->V[X] != NN) {
+                if (debug) SDL_Log("Skip next instruction");
+                chip8->PC += 2; 
+            }
+            break;
+        case 0x5:
+            if (chip8->V[X] == chip8->V[Y]) {
+                if (debug) SDL_Log("Skip next instruction");
+                chip8->PC += 2; 
+            }
             break;
         case 0x6:
             if (debug) SDL_Log("Set register V%x to 0x%04X", X, NN);
@@ -85,6 +103,12 @@ bool execute_cycle(chip8_t *chip8, bool debug) {
             fprintf(stderr, "%x, %x", NN, X);
             if (debug) SDL_Log("Add 0x%04X to register V%x", NN, X);
             chip8->V[X] += NN;
+            break;
+        case 0x9:
+            if (chip8->V[X] != chip8->V[Y]) {
+                if (debug) SDL_Log("Skip next instruction");
+                chip8->PC += 2; 
+            }
             break;
         case 0xA:
             if (debug) SDL_Log("Set index register I to 0x%04X", NNN);
