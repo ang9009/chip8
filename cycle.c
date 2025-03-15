@@ -36,18 +36,20 @@ void update_display(chip8_t* chip8, uint8_t X, uint8_t Y, uint8_t N) {
   }
 }
 
-// Handles opcodes prefixed with 0x0.
+// Handles opcodes prefixed with 0x0 (routine related instructions).
 bool handle_routines(const uint16_t opcode, bool debug, chip8_t* chip8) {
   switch (opcode) {
     case 0x00E0:
-      if (debug)
+      if (debug) {
         SDL_Log("Clear screen");
+      }
       memset(&chip8->display[0], 0, sizeof chip8->display);
       chip8->update_screen = true;
       break;
     case 0x00EE:
-      if (debug)
+      if (debug) {
         SDL_Log("Return from subroutine");
+      }
       chip8->PC = *chip8->SP;
       chip8->SP--;  // Pop address from stack
       break;
@@ -63,45 +65,79 @@ bool handle_routines(const uint16_t opcode, bool debug, chip8_t* chip8) {
 bool handle_arithmetic(const uint8_t N, bool debug, const uint8_t X,
                        const uint8_t Y, chip8_t* chip8, chip8_ver_t ver,
                        const uint16_t opcode) {
-  (void)ver;
-
   switch (N) {
     case 0x0:
-      if (debug)
+      if (debug) {
         SDL_Log("Set V[%X] to V[%X]", X, Y);
+      }
       chip8->V[X] = chip8->V[Y];
       break;
     case 0x1:
-      if (debug)
+      if (debug) {
         SDL_Log("Set V[%X] to V[%X] OR V[%X]", X, X, Y);
+      }
       chip8->V[X] = chip8->V[X] | chip8->V[Y];
       break;
     case 0x2:
-      if (debug)
+      if (debug) {
         SDL_Log("Set V[%X] to V[%X] AND V[%X]", X, X, Y);
+      }
       chip8->V[X] = chip8->V[X] & chip8->V[Y];
       break;
     case 0x3:
-      if (debug)
+      if (debug) {
         SDL_Log("Set V[%X] to V[%X] XOR V[%X]", X, X, Y);
+      }
       chip8->V[X] = chip8->V[X] ^ chip8->V[Y];
       break;
     case 0x4:
-      if (debug)
+      if (debug) {
         SDL_Log("Set V[%X] to V[%X] + V[%X]", X, X, Y);
+      }
       chip8->V[X] = chip8->V[Y];
       chip8->V[0xF] = (chip8->V[X] + chip8->V[Y]) > 255;
       break;
     case 0x5:
-      if (debug)
+      if (debug) {
         SDL_Log("Set V[%X] to V[%X] - V[%X]", X, X, Y);
+      }
       chip8->V[0xF] = chip8->V[X] >= chip8->V[Y];
       chip8->V[X] -= chip8->V[Y];
       break;
     case 0x6:
-      if (debug)
+      if (debug) {
+        SDL_Log(
+            "Set V[%X] to V[%X], shift V[%X] one bit to the right, store bit "
+            "shifted out in V[F]",
+            X, Y, X);
+      }
+      if (ver == COSMAC) {
+        chip8->V[X] = chip8->V[Y];
+      }
+      uint8_t bit = chip8->V[X] & 0b1;
+      chip8->V[0xF] = bit;
+      chip8->V[X] >>= 1;
+      break;
+    case 0x7:
+      if (debug) {
         SDL_Log("Set V[%X] to V[%X] - V[%X]", X, Y, X);
-      // ! Incomplete
+      }
+      chip8->V[0xF] = chip8->V[Y] >= chip8->V[X];
+      chip8->V[X] = chip8->V[Y] - chip8->V[X];
+      break;
+    case 0xE:
+      if (debug) {
+        SDL_Log(
+            "Set V[%X] to V[%X], shift V[%X] one bit to the left, store bit "
+            "shifted out in V[F]",
+            X, Y, X);
+      }
+      if (ver == COSMAC) {
+        chip8->V[X] = chip8->V[Y];
+      }
+      uint8_t bit = (chip8->V[X] >> 7) & 0b1;  // Get MSB
+      chip8->V[0xF] = bit;
+      chip8->V[X] <<= 1;
       break;
     default:
       SDL_Log("Unknown instruction: %X", opcode);
@@ -133,46 +169,53 @@ bool execute_cycle(chip8_t* chip8, chip8_ver_t ver, bool debug) {
       }
       break;
     case 0x1:
-      if (debug)
+      if (debug) {
         SDL_Log("Jump to 0x%04X", NNN);
+      }
       chip8->PC = NNN;
       break;
     case 0x2:
-      if (debug)
+      if (debug) {
         SDL_Log("Push PC to stack, call subroutine at 0x%04X", NNN);
+      }
       chip8->SP++;
       *chip8->SP = chip8->PC;  // Push PC to stack
       chip8->PC = NNN;
       break;
     case 0x3:
       if (chip8->V[X] == NN) {
-        if (debug)
+        if (debug) {
           SDL_Log("Skip next instruction");
+        }
         chip8->PC += 2;
       }
       break;
     case 0x4:
       if (chip8->V[X] != NN) {
-        if (debug)
+        if (debug) {
           SDL_Log("Skip next instruction");
+        }
         chip8->PC += 2;
       }
       break;
     case 0x5:
       if (chip8->V[X] == chip8->V[Y]) {
-        if (debug)
+        if (debug) {
           SDL_Log("Skip next instruction");
+        }
         chip8->PC += 2;
       }
       break;
     case 0x6:
-      if (debug)
+      if (debug) {
         SDL_Log("Set register V%x to 0x%04X", X, NN);
+      }
       chip8->V[X] = NN;
       break;
     case 0x7:
-      if (debug)
+      if (debug) {
         SDL_Log("Add 0x%04X to register V%x", NN, X);
+      }
       chip8->V[X] += NN;
       break;
     case 0x8:
@@ -182,19 +225,22 @@ bool execute_cycle(chip8_t* chip8, chip8_ver_t ver, bool debug) {
       break;
     case 0x9:
       if (chip8->V[X] != chip8->V[Y]) {
-        if (debug)
+        if (debug) {
           SDL_Log("Skip next instruction");
+        }
         chip8->PC += 2;
       }
       break;
     case 0xA:
-      if (debug)
+      if (debug) {
         SDL_Log("Set index register I to 0x%04X", NNN);
+      }
       chip8->I = NNN;
       break;
     case 0xD:
-      if (debug)
+      if (debug) {
         SDL_Log("Update display");
+      }
       update_display(chip8, X, Y, N);
       chip8->update_screen = true;
       break;
