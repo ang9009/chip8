@@ -63,6 +63,8 @@ bool handle_routines(const uint16_t opcode, bool debug, chip8_t* chip8) {
 bool handle_arithmetic(const uint8_t N, bool debug, const uint8_t X,
                        const uint8_t Y, chip8_t* chip8, chip8_ver_t ver,
                        const uint16_t opcode) {
+  (void)ver;
+
   switch (N) {
     case 0x0:
       if (debug)

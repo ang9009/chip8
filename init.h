@@ -11,6 +11,7 @@
 
 // Used to differentiate between different versions of chip8.
 typedef enum {
+  UNINITIALIZED,
   COSMAC,
   CHIP48_SUPERCHIP,
 } chip8_ver_t;

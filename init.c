@@ -142,6 +142,9 @@ void handle_input(chip8_t* chip8) {
 
 // Gets flags from the command line
 bool init_flags(flags_t* flags, int argc, char** argv) {
+  // Since 0 is a valid default enum value, we init to -1 first
+  flags->version = UNINITIALIZED;
+
   for (int i = 1; i < argc - 1; i++) {
     if (strcmp(argv[i], ROM_FLAG) == 0) {
       flags->rom_name = argv[i + 1];
@@ -166,6 +169,7 @@ bool init_flags(flags_t* flags, int argc, char** argv) {
         SDL_Log("Unrecognized chip8 version \"%s\" provided", argv[i + 1]);
         return false;
       }
+      i++;
     } else {
       SDL_Log("Unknown flag: %s.", argv[i]);
       return false;
@@ -174,7 +178,7 @@ bool init_flags(flags_t* flags, int argc, char** argv) {
 
   //   Throw error if mandatory flags are missing
   if (flags->rom_name == 0 || flags->insns_per_sec == 0 ||
-      flags->version == 0) {
+      flags->version == UNINITIALIZED) {
     SDL_Log("One or more flags are missing");
     return false;
   }
