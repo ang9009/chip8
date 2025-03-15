@@ -23,6 +23,7 @@ int main(int argc, char** argv) {
       .scale = 6,
       .pixel_color = 0xfffc7f,
       .insns_per_sec = flags.insns_per_sec ? flags.insns_per_sec : 700,
+      .version = flags.version,
   };
 
   SDL_Log("Rom file: %s, instructions/sec: %d", flags.rom_name,
@@ -48,7 +49,7 @@ int main(int argc, char** argv) {
     // as desired
     for (int i = 0; i < ((int)flags.insns_per_sec) / 60; i++) {
       // Fetch decode execute helper
-      execute_cycle(&chip8, true);
+      execute_cycle(&chip8, config.version, true);
     }
     const uint64_t end_count = SDL_GetPerformanceCounter();
     const uint64_t count_per_sec = SDL_GetPerformanceFrequency();

@@ -1,6 +1,7 @@
 #include "cycle.h"
 #include "SDL2/SDL.h"
 #include "chip8.h"
+#include "init.h"
 
 // Updates the display in the chip8 struct.
 void update_display(chip8_t* chip8, uint8_t X, uint8_t Y, uint8_t N) {
@@ -36,8 +37,7 @@ void update_display(chip8_t* chip8, uint8_t X, uint8_t Y, uint8_t N) {
 }
 
 // Handles opcodes prefixed with 0x0.
-bool handle_zero_prefixed_insn(const uint16_t opcode, bool debug,
-                               chip8_t* chip8) {
+bool handle_routines(const uint16_t opcode, bool debug, chip8_t* chip8) {
   switch (opcode) {
     case 0x00E0:
       if (debug)
@@ -60,9 +60,9 @@ bool handle_zero_prefixed_insn(const uint16_t opcode, bool debug,
 }
 
 // Handles opcodes prefixed with 0x8.
-bool handle_eight_prefixed_insn(const uint8_t N, bool debug, const uint8_t X,
-                                const uint8_t Y, chip8_t* chip8,
-                                const uint16_t opcode) {
+bool handle_arithmetic(const uint8_t N, bool debug, const uint8_t X,
+                       const uint8_t Y, chip8_t* chip8, chip8_ver_t ver,
+                       const uint16_t opcode) {
   switch (N) {
     case 0x0:
       if (debug)
@@ -96,6 +96,11 @@ bool handle_eight_prefixed_insn(const uint8_t N, bool debug, const uint8_t X,
       chip8->V[0xF] = chip8->V[X] >= chip8->V[Y];
       chip8->V[X] -= chip8->V[Y];
       break;
+    case 0x6:
+      if (debug)
+        SDL_Log("Set V[%X] to V[%X] - V[%X]", X, Y, X);
+      // ! Incomplete
+      break;
     default:
       SDL_Log("Unknown instruction: %X", opcode);
       return false;
@@ -107,7 +112,7 @@ bool handle_eight_prefixed_insn(const uint8_t N, bool debug, const uint8_t X,
 /**
  * Executes one iteration of the chip8 fetch-decode-execute cycle.
  */
-bool execute_cycle(chip8_t* chip8, bool debug) {
+bool execute_cycle(chip8_t* chip8, chip8_ver_t ver, bool debug) {
   // Fetch insn from memory
   const uint16_t opcode =
       (chip8->ram[chip8->PC] << 8) | (chip8->ram[chip8->PC + 1]);
@@ -121,7 +126,7 @@ bool execute_cycle(chip8_t* chip8, bool debug) {
 
   switch (opcode >> 12 & 0xF) {
     case 0x0:
-      if (!handle_zero_prefixed_insn(opcode, debug, chip8)) {
+      if (!handle_routines(opcode, debug, chip8)) {
         return false;
       }
       break;
@@ -169,7 +174,7 @@ bool execute_cycle(chip8_t* chip8, bool debug) {
       chip8->V[X] += NN;
       break;
     case 0x8:
-      if (!handle_eight_prefixed_insn(N, debug, X, Y, chip8, opcode)) {
+      if (!handle_arithmetic(N, debug, X, Y, chip8, ver, opcode)) {
         return false;
       }
       break;
