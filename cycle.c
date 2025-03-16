@@ -3,6 +3,10 @@
 #include "chip8.h"
 #include "init.h"
 
+void handle_input(bool* keypad) {
+  // ! Incomplete
+}
+
 // Updates the display in the chip8 struct.
 void update_display(chip8_t* chip8, uint8_t X, uint8_t Y, uint8_t N) {
   int x_coord = chip8->V[X] % SCREEN_W;

@@ -25,8 +25,9 @@ typedef struct {
   uint16_t PC;   // Program counter
   uint8_t delay_timer;
   uint8_t sound_timer;
-  uint8_t V[16];  // Registers
-  state_t state;
+  uint8_t V[16];    // Registers
+  state_t state;    // Current state
+  bool keypad[16];  // Chip8's 16 digit keypad
   bool
       update_screen;  // Indicates if SDL should update the screen on the next tick
 } chip8_t;
