@@ -164,7 +164,7 @@ bool init_flags(flags_t* flags, int argc, char** argv) {
       if (strcmp(argv[i + 1], "COSMAC") == 0) {
         flags->version = COSMAC;
       } else if (strcmp(argv[i + 1], "CHIP48_SUPERCHIP") == 0) {
-        flags->version = CHIP48_SUPERCHIP;
+        flags->version = CHIP48_SCHIP;
       } else {
         SDL_Log("Unrecognized chip8 version \"%s\" provided", argv[i + 1]);
         return false;

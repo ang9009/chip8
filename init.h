@@ -9,11 +9,11 @@
 #define INSNS_FLAG "--insns-per-sec"
 #define VERSION_FLAG "--v"
 
-// Used to differentiate between different versions of chip8.
+// Used to differentiate between different versions of chip8 (quirks)
 typedef enum {
   UNINITIALIZED,
   COSMAC,
-  CHIP48_SUPERCHIP,
+  CHIP48_SCHIP,  // Chip48 or Superchip variants
 } chip8_ver_t;
 
 typedef struct {
@@ -47,6 +47,7 @@ void handle_input(chip8_t* chip8);
 // Gets flags from the command line
 bool init_flags(flags_t* flags, int argc, char** argv);
 
+// Reads the rom file into memory
 bool read_rom_into_ram(chip8_t* chip8, char* rom_name, size_t entrypoint);
 
 #endif

@@ -135,8 +135,8 @@ bool handle_arithmetic(const uint8_t N, bool debug, const uint8_t X,
       if (ver == COSMAC) {
         chip8->V[X] = chip8->V[Y];
       }
-      uint8_t bit = (chip8->V[X] >> 7) & 0b1;  // Get MSB
-      chip8->V[0xF] = bit;
+      uint8_t msb = (chip8->V[X] >> 7) & 0b1;  // Get MSB
+      chip8->V[0xF] = msb;
       chip8->V[X] <<= 1;
       break;
     default:
@@ -236,6 +236,21 @@ bool execute_cycle(chip8_t* chip8, chip8_ver_t ver, bool debug) {
         SDL_Log("Set index register I to 0x%04X", NNN);
       }
       chip8->I = NNN;
+      break;
+    case 0xB:
+      uint16_t addr =
+          ver == COSMAC ? NNN + chip8->V[0] : ((X << 8) | NN) + chip8->V[X];
+      if (debug) {
+        SDL_Log("Jump to 0x%04X", addr);
+      }
+      chip8->PC = addr;
+      break;
+    case 0xC:
+      uint8_t random = (rand() % 256) & NN;
+      chip8->V[X] = random;
+      if (debug) {
+        SDL_Log("Set V[%X] to 0x%04X", X, random);
+      }
       break;
     case 0xD:
       if (debug) {
