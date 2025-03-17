@@ -3,18 +3,19 @@
 #include "chip8.h"
 #include "init.h"
 
+// Maps keypad indices to their scancode
+const SDL_Scancode key_idx_to_code[16] = {
+    SDL_SCANCODE_1, SDL_SCANCODE_2, SDL_SCANCODE_3, SDL_SCANCODE_4,
+    SDL_SCANCODE_Q, SDL_SCANCODE_W, SDL_SCANCODE_E, SDL_SCANCODE_R,
+    SDL_SCANCODE_A, SDL_SCANCODE_S, SDL_SCANCODE_D, SDL_SCANCODE_F,
+    SDL_SCANCODE_Z, SDL_SCANCODE_X, SDL_SCANCODE_C, SDL_SCANCODE_V};
+
 /**
  * Handles user input, and updates the given keypad based on what the user is currently 
  * pressing.
  */
 void handle_input(bool keypad[16], state_t* state) {
   SDL_Event event;
-  // Maps keypad indices to their scancode
-  SDL_Scancode key_idx_to_code[16] = {
-      SDL_SCANCODE_1, SDL_SCANCODE_2, SDL_SCANCODE_3, SDL_SCANCODE_4,
-      SDL_SCANCODE_Q, SDL_SCANCODE_W, SDL_SCANCODE_E, SDL_SCANCODE_R,
-      SDL_SCANCODE_A, SDL_SCANCODE_S, SDL_SCANCODE_D, SDL_SCANCODE_F,
-      SDL_SCANCODE_Z, SDL_SCANCODE_X, SDL_SCANCODE_C, SDL_SCANCODE_V};
 
   while (SDL_PollEvent(&event)) {
     switch (event.type) {
@@ -287,6 +288,43 @@ bool execute_cycle(chip8_t* chip8, chip8_ver_t ver, bool debug) {
       update_display(chip8, X, Y, N);
       chip8->update_screen = true;
       break;
+    case 0xE:
+      switch (NN) {
+        case 0x9E:
+          if (chip8->keypad[chip8->V[X]]) {
+            SDL_Log("Skip next instruction due to key pressed");
+            chip8->PC += 2;
+          }
+          break;
+        case 0xA1:
+          if (!chip8->keypad[chip8->V[X]]) {
+            SDL_Log("Skip next instruction due to key not pressed");
+            chip8->PC += 2;
+          }
+          break;
+      }
+      break;
+    case 0xF:
+      switch (NN) {
+        case 0x07:
+          if (debug) {
+            SDL_Log("Set V[%X] to delay timer (0x%04X)", X, chip8->delay_timer);
+          }
+          chip8->V[X] = chip8->delay_timer;
+          break;
+        case 0x15:
+          if (debug) {
+            SDL_Log("Set delay timer to V[%X] (0x%04X)", X, chip8->V[X]);
+          }
+          chip8->delay_timer = chip8->V[X];
+          break;
+        case 0x18:
+          if (debug) {
+            SDL_Log("Set sound timer to V[%X] (0x%04X)", X, chip8->V[X]);
+          }
+          chip8->sound_timer = chip8->V[X];
+          break;
+      }
     default:
       SDL_Log("Unknown instruction: %x", opcode >> 12 & 0xF);
       return false;
