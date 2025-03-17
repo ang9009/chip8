@@ -126,20 +126,6 @@ bool read_rom_into_ram(chip8_t* chip8, char* rom_name, size_t entrypoint) {
   return true;
 }
 
-// Handles user input
-void handle_input(chip8_t* chip8) {
-  SDL_Event event;
-
-  while (SDL_PollEvent(&event)) {
-    switch (event.type) {
-      case SDL_QUIT:
-        SDL_Log("Window was closed, stopping program");
-        chip8->state = STOPPED;
-        break;
-    }
-  }
-}
-
 // Gets flags from the command line
 bool init_flags(flags_t* flags, int argc, char** argv) {
   // Since 0 is a valid default enum value, we init to -1 first

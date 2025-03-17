@@ -15,6 +15,6 @@ bool execute_cycle(chip8_t* chip8, chip8_ver_t ver, bool debug);
  * Handles user input, and updates the given keypad based on what the user is currently 
  * pressing.
  */
-void handle_input(bool* keypad);
+void handle_input(bool keypad[16], state_t* state);
 
 #endif

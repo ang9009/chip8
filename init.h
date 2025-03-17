@@ -41,13 +41,13 @@ bool init_sdl(sdl_t* sdl, config_t config);
 // Initializes the chip8 structure
 bool init_chip8(chip8_t* chip8, char* rom_name);
 
-// Handles user input
-void handle_input(chip8_t* chip8);
-
 // Gets flags from the command line
 bool init_flags(flags_t* flags, int argc, char** argv);
 
-// Reads the rom file into memory
+/**
+ * Reads a specified ROM into the RAM of the given chip8 struct at the given RAM entrypoint.
+ * Returns whether the operation was successful, and logs an error message if it was not.
+ */
 bool read_rom_into_ram(chip8_t* chip8, char* rom_name, size_t entrypoint);
 
 #endif

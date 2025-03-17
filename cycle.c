@@ -3,8 +3,32 @@
 #include "chip8.h"
 #include "init.h"
 
-void handle_input(bool* keypad) {
-  // ! Incomplete
+/**
+ * Handles user input, and updates the given keypad based on what the user is currently 
+ * pressing.
+ */
+void handle_input(bool keypad[16], state_t* state) {
+  SDL_Event event;
+  // Maps keypad indices to their scancode
+  SDL_Scancode key_idx_to_code[16] = {
+      SDL_SCANCODE_1, SDL_SCANCODE_2, SDL_SCANCODE_3, SDL_SCANCODE_4,
+      SDL_SCANCODE_Q, SDL_SCANCODE_W, SDL_SCANCODE_E, SDL_SCANCODE_R,
+      SDL_SCANCODE_A, SDL_SCANCODE_S, SDL_SCANCODE_D, SDL_SCANCODE_F,
+      SDL_SCANCODE_Z, SDL_SCANCODE_X, SDL_SCANCODE_C, SDL_SCANCODE_V};
+
+  while (SDL_PollEvent(&event)) {
+    switch (event.type) {
+      case SDL_QUIT:
+        *state = STOPPED;
+        break;
+      default:
+        const uint8_t* keyboard_state = SDL_GetKeyboardState(NULL);
+        for (int i = 0; i < 16; i++) {
+          keypad[i] = keyboard_state[key_idx_to_code[i]];
+        }
+        break;
+    }
+  }
 }
 
 // Updates the display in the chip8 struct.

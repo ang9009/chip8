@@ -42,12 +42,14 @@ int main(int argc, char** argv) {
 
   // Main loop
   while (chip8.state != STOPPED) {
-    handle_input(&chip8);
+    handle_input(chip8.keypad, &chip8.state);
 
     const uint64_t start_count = SDL_GetPerformanceCounter();
+    // The start and end times mark the beginning and end of the current "frame". There are
+    // 60 frames per second (60hz), each lasting (1 sec / 60).
+
     // We need to execute (insns per sec / 60) insns for every refresh to
-    // achieve 60Hz (insns per sec / 60) * 60 refreshes per sec = insns per sec
-    // as desired
+    // achieve 60hz
     for (int i = 0; i < ((int)flags.insns_per_sec) / 60; i++) {
       // Fetch decode execute helper
       execute_cycle(&chip8, config.version, true);
@@ -57,8 +59,7 @@ int main(int argc, char** argv) {
     const double dt_ms =
         (((double)(end_count - start_count) / count_per_sec)) * 1000;
 
-    // 1 / 60 = 16.67ms. We need to delay each frame by at least this amount to
-    // achieve 60hz
+    // 1 sec / 60 = 16.67ms. We need each frame to last this long to achieve 60hz
     const uint32_t delay = dt_ms > 16.67 ? 0 : 16.67 - dt_ms;
     SDL_Delay(delay);
 
