@@ -34,7 +34,7 @@ rgba_t get_color(uint32_t color) {
 
 // Updates the screen based on the current state of chip8
 void update_screen(chip8_t chip8, config_t config, sdl_t* sdl) {
-  // rgba_t pixel_color = get_color(config.pixel_color);
+  //   rgba_t pixel_color = get_color(config.pixel_color);
 
   for (int i = 0; i < SCREEN_W; i++) {
     for (int j = 0; j < SCREEN_H; j++) {

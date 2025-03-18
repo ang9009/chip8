@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "SDL2/SDL.h"
 #include "chip8.h"
@@ -13,6 +14,7 @@ int main(int argc, char** argv) {
             argv[0], ROM_FLAG, INSNS_FLAG);
     exit(EXIT_FAILURE);
   }
+  srand(time(NULL));  // Seed random
 
   sdl_t sdl = {0};
   flags_t flags = {0};
@@ -21,7 +23,7 @@ int main(int argc, char** argv) {
   }
   config_t config = {
       .scale = 8,
-      .pixel_color = 0xfffc7f,
+      .pixel_color = 0xfff,
       .insns_per_sec = flags.insns_per_sec ? flags.insns_per_sec : 700,
       .version = flags.version,
       .debug = true,

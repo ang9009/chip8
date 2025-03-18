@@ -224,26 +224,14 @@ bool handle_f_prefixed_insns(const uint8_t NN, bool debug, const uint8_t X,
       if (!key_detected) {
         chip8->PC -= 2;  // Repeat this instruction until key is pressed
       }
-
       break;
     case 0x29:
-      int idx = -1;
-      for (int i = 0; i < 16; i++) {
-        if (chip8->V[X] == key_idx_to_hex[i]) {
-          idx = i;
-          break;
-        }
-      }
-      if (idx == -1) {
-        SDL_Log("Could not find matching key in V[%X]", X);
-        return false;
-      }
       // End each char takes up 5 hex characters (5 positions in memory)
-      int font_pos = FONT_ENTRYPOINT + (idx * 5);
+      int font_pos = FONT_ENTRYPOINT + (chip8->V[X] * 5);
       chip8->I = font_pos;
 
       if (debug) {
-        SDL_Log("Set index register I to character %X", key_idx_to_hex[idx]);
+        SDL_Log("Set index register I to character %X", chip8->V[X]);
       }
       break;
     case 0x33:
