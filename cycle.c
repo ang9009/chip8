@@ -261,18 +261,18 @@ bool handle_f_prefixed_insns(const uint8_t NN, bool debug, const uint8_t X,
       if (debug) {
         SDL_Log("Store registers to memory");
       }
-      for (int i = 0; i < X; i++) {
+      for (int i = 0; i <= X; i++) {
         chip8->ram[chip8->I + i] = chip8->V[i];
       }
       if (ver == COSMAC) {
-        chip8->I += X + 1;
+        chip8->I += (X + 1);
       }
       break;
     case 0x65:
       if (debug) {
         SDL_Log("Load register values from memory");
       }
-      for (int i = 0; i < X; i++) {
+      for (int i = 0; i <= X; i++) {
         chip8->V[i] = chip8->ram[chip8->I + i];
       }
       if (ver == COSMAC) {
