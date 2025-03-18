@@ -29,7 +29,7 @@ void handle_input(bool keypad[16], state_t* state) {
       default:
         const uint8_t* keyboard_state = SDL_GetKeyboardState(NULL);
         for (int i = 0; i < 16; i++) {
-          keypad[i] = keyboard_state[key_idx_to_code[i]];
+          keypad[i] = (bool)keyboard_state[key_idx_to_code[i]];
         }
         break;
     }
@@ -127,14 +127,15 @@ bool handle_arithmetic(const uint8_t N, bool debug, const uint8_t X,
       if (debug) {
         SDL_Log("Set V[%X] to V[%X] + V[%X]", X, X, Y);
       }
-      chip8->V[X] = chip8->V[Y];
-      chip8->V[0xF] = (chip8->V[X] + chip8->V[Y]) > 255;
+      uint16_t sum = chip8->V[X] + chip8->V[Y];
+      chip8->V[X] = sum & 0xFF;
+      chip8->V[0xF] = (sum > 255) ? 1 : 0;
       break;
     case 0x5:
       if (debug) {
         SDL_Log("Set V[%X] to V[%X] - V[%X]", X, X, Y);
       }
-      chip8->V[0xF] = chip8->V[X] >= chip8->V[Y];
+      chip8->V[0xF] = (int)(chip8->V[X] >= chip8->V[Y]);
       chip8->V[X] -= chip8->V[Y];
       break;
     case 0x6:
@@ -209,19 +210,19 @@ bool handle_f_prefixed_insns(const uint8_t NN, bool debug, const uint8_t X,
       break;
     case 0x0A:
       if (debug) {
-        SDL_Log("Block until key pressed");
+        SDL_Log("Blocking until key pressed");
       }
-      uint8_t key_pressed = 255;
+      bool key_detected = false;
       for (int i = 0; i < 16; i++) {
         if (chip8->keypad[i]) {
-          key_pressed = key_idx_to_hex[i];
+          chip8->V[X] = key_idx_to_hex[i];
+          key_detected = true;
           break;
         }
       }
-      if (key_pressed == 255) {
-        chip8->PC -= 2;  // Return to this instruction on next cycle
-      } else {
-        chip8->V[X] = key_pressed;
+
+      if (!key_detected) {
+        chip8->PC -= 2;  // Repeat this instruction until key is pressed
       }
 
       break;
@@ -402,17 +403,22 @@ bool execute_cycle(chip8_t* chip8, chip8_ver_t ver, bool debug) {
     case 0xE:
       switch (NN) {
         case 0x9E:
+          SDL_Log("Skip next instruction if key not pressed");
           if (chip8->keypad[chip8->V[X]]) {
             SDL_Log("Skip next instruction due to key pressed");
             chip8->PC += 2;
           }
           break;
         case 0xA1:
+          SDL_Log("Skip next instruction if key not pressed");
           if (!chip8->keypad[chip8->V[X]]) {
             SDL_Log("Skip next instruction due to key not pressed");
             chip8->PC += 2;
           }
           break;
+        default:
+          SDL_Log("Unknown instruction: 0x%04X", opcode);
+          return false;
       }
       break;
     case 0xF:

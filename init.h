@@ -1,6 +1,7 @@
 #ifndef INIT_H_INCLUDED
 #define INIT_H_INCLUDED
 
+#include <stdbool.h>
 #include "SDL2/SDL.h"
 #include "chip8.h"
 
@@ -29,6 +30,7 @@ typedef struct {
   uint32_t pixel_color;    // The color of each pixel in the foreground
   uint32_t insns_per_sec;  // The number of instructions per second (hz)
   chip8_ver_t version;
+  bool debug;  // If debug statements should be printed for each instruction
 } config_t;
 
 typedef struct {

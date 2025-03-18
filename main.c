@@ -24,6 +24,7 @@ int main(int argc, char** argv) {
       .pixel_color = 0xfffc7f,
       .insns_per_sec = flags.insns_per_sec ? flags.insns_per_sec : 700,
       .version = flags.version,
+      .debug = true,
   };
 
   SDL_Log("Rom file: %s, instructions/sec: %d", flags.rom_name,
@@ -44,6 +45,9 @@ int main(int argc, char** argv) {
   while (chip8.state != STOPPED) {
     handle_input(chip8.keypad, &chip8.state);
 
+    if (chip8.state == PAUSED)
+      continue;
+
     const uint64_t start_count = SDL_GetPerformanceCounter();
     // The start and end times mark the beginning and end of the current "frame". There are
     // 60 frames per second (60hz), each lasting (1 sec / 60).
@@ -52,7 +56,7 @@ int main(int argc, char** argv) {
     // achieve 60hz
     for (int i = 0; i < ((int)flags.insns_per_sec) / 60; i++) {
       // Fetch decode execute helper
-      execute_cycle(&chip8, config.version, true);
+      execute_cycle(&chip8, config.version, config.debug);
     }
     const uint64_t end_count = SDL_GetPerformanceCounter();
     const uint64_t count_per_sec = SDL_GetPerformanceFrequency();
