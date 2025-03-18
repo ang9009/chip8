@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
     exit(EXIT_FAILURE);
   }
   config_t config = {
-      .scale = 6,
+      .scale = 8,
       .pixel_color = 0xfffc7f,
       .insns_per_sec = flags.insns_per_sec ? flags.insns_per_sec : 700,
       .version = flags.version,

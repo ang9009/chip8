@@ -19,7 +19,7 @@ typedef enum {
 typedef struct {
   uint8_t ram[4096];
   bool display[SCREEN_H][SCREEN_W];
-  uint16_t I;
+  uint16_t I;  // Index register
   uint16_t stack[12];
   uint16_t* SP;  // Stack pointer
   uint16_t PC;   // Program counter

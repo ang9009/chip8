@@ -10,6 +10,10 @@ const SDL_Scancode key_idx_to_code[16] = {
     SDL_SCANCODE_A, SDL_SCANCODE_S, SDL_SCANCODE_D, SDL_SCANCODE_F,
     SDL_SCANCODE_Z, SDL_SCANCODE_X, SDL_SCANCODE_C, SDL_SCANCODE_V};
 
+// Maps keypad indices to their hex values
+const uint8_t key_idx_to_hex[16] = {0x1, 0x2, 0x3, 0xC, 0x4, 0x5, 0x6, 0xD,
+                                    0x7, 0x8, 0x9, 0xE, 0xA, 0x0, 0xB, 0xF};
+
 /**
  * Handles user input, and updates the given keypad based on what the user is currently 
  * pressing.
@@ -176,6 +180,113 @@ bool handle_arithmetic(const uint8_t N, bool debug, const uint8_t X,
   return true;
 }
 
+bool handle_f_prefixed_insns(const uint8_t NN, bool debug, const uint8_t X,
+                             chip8_t* chip8, uint16_t opcode, chip8_ver_t ver) {
+  switch (NN) {
+    case 0x07:
+      if (debug) {
+        SDL_Log("Set V[%X] to delay timer (0x%04X)", X, chip8->delay_timer);
+      }
+      chip8->V[X] = chip8->delay_timer;
+      break;
+    case 0x15:
+      if (debug) {
+        SDL_Log("Set delay timer to V[%X] (0x%04X)", X, chip8->V[X]);
+      }
+      chip8->delay_timer = chip8->V[X];
+      break;
+    case 0x18:
+      if (debug) {
+        SDL_Log("Set sound timer to V[%X] (0x%04X)", X, chip8->V[X]);
+      }
+      chip8->sound_timer = chip8->V[X];
+      break;
+    case 0x1E:
+      if (debug) {
+        SDL_Log("Add 0x%04X to index register I", chip8->V[X]);
+      }
+      chip8->I += chip8->V[X];
+      break;
+    case 0x0A:
+      if (debug) {
+        SDL_Log("Block until key pressed");
+      }
+      uint8_t key_pressed = 255;
+      for (int i = 0; i < 16; i++) {
+        if (chip8->keypad[i]) {
+          key_pressed = key_idx_to_hex[i];
+          break;
+        }
+      }
+      if (key_pressed == 255) {
+        chip8->PC -= 2;  // Return to this instruction on next cycle
+      } else {
+        chip8->V[X] = key_pressed;
+      }
+
+      break;
+    case 0x29:
+      int idx = -1;
+      for (int i = 0; i < 16; i++) {
+        if (chip8->V[X] == key_idx_to_hex[i]) {
+          idx = i;
+          break;
+        }
+      }
+      if (idx == -1) {
+        SDL_Log("Could not find matching key in V[%X]", X);
+        return false;
+      }
+      // End each char takes up 5 hex characters (5 positions in memory)
+      int font_pos = FONT_ENTRYPOINT + (idx * 5);
+      chip8->I = font_pos;
+
+      if (debug) {
+        SDL_Log("Set index register I to character %X", key_idx_to_hex[idx]);
+      }
+      break;
+    case 0x33:
+      int vx = chip8->V[X];
+      if (debug) {
+        SDL_Log("Set positions in memory to digits in %d", vx);
+      }
+      int divisors[3] = {100, 10, 1};
+
+      for (int i = 0; i < 3; i++) {
+        int digit = (vx / divisors[i]) % 10;
+        chip8->ram[chip8->I + i] = digit;
+      }
+      break;
+    case 0x55:
+      if (debug) {
+        SDL_Log("Store registers to memory");
+      }
+      for (int i = 0; i < X; i++) {
+        chip8->ram[chip8->I + i] = chip8->V[i];
+      }
+      if (ver == COSMAC) {
+        chip8->I += X + 1;
+      }
+      break;
+    case 0x65:
+      if (debug) {
+        SDL_Log("Load register values from memory");
+      }
+      for (int i = 0; i < X; i++) {
+        chip8->V[i] = chip8->ram[chip8->I + i];
+      }
+      if (ver == COSMAC) {
+        chip8->I += X + 1;
+      }
+      break;
+    default:
+      SDL_Log("Unknown instruction: %x", opcode >> 12 & 0xF);
+      return false;
+  }
+
+  return true;
+}
+
 /**
  * Executes one iteration of the chip8 fetch-decode-execute cycle.
  */
@@ -305,26 +416,10 @@ bool execute_cycle(chip8_t* chip8, chip8_ver_t ver, bool debug) {
       }
       break;
     case 0xF:
-      switch (NN) {
-        case 0x07:
-          if (debug) {
-            SDL_Log("Set V[%X] to delay timer (0x%04X)", X, chip8->delay_timer);
-          }
-          chip8->V[X] = chip8->delay_timer;
-          break;
-        case 0x15:
-          if (debug) {
-            SDL_Log("Set delay timer to V[%X] (0x%04X)", X, chip8->V[X]);
-          }
-          chip8->delay_timer = chip8->V[X];
-          break;
-        case 0x18:
-          if (debug) {
-            SDL_Log("Set sound timer to V[%X] (0x%04X)", X, chip8->V[X]);
-          }
-          chip8->sound_timer = chip8->V[X];
-          break;
+      if (!handle_f_prefixed_insns(NN, debug, X, chip8, opcode, ver)) {
+        return false;
       }
+      break;
     default:
       SDL_Log("Unknown instruction: %x", opcode >> 12 & 0xF);
       return false;

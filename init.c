@@ -34,7 +34,7 @@ bool init_sdl(sdl_t* sdl, config_t config) {
     return false;
   }
   // ! Audio incomplete
-  // sdl->audio_dev_id = SDL_OpenAudioDevice(audio_dev_name, 0, )
+  // sdl->audio_dev_id = SDL_OpenAudioDevice(audio_dev_name, 0, );
 
   // Initialize renderer
   sdl->renderer = SDL_CreateRenderer(sdl->window, -1, SDL_RENDERER_ACCELERATED);
@@ -73,7 +73,7 @@ bool init_chip8(chip8_t* chip8, char* rom_name) {
   memset(chip8, 0, sizeof(chip8_t));
 
   // Copy fonts into RAM, read ROM into RAM
-  memcpy(&(chip8->ram[0x050]), font, sizeof(font));
+  memcpy(&(chip8->ram[FONT_ENTRYPOINT]), font, sizeof(font));
   const size_t entrypoint = 0x200;
   if (!read_rom_into_ram(chip8, rom_name, entrypoint)) {
     return false;
@@ -149,7 +149,7 @@ bool init_flags(flags_t* flags, int argc, char** argv) {
     } else if (strcmp(argv[i], VERSION_FLAG) == 0) {
       if (strcmp(argv[i + 1], "COSMAC") == 0) {
         flags->version = COSMAC;
-      } else if (strcmp(argv[i + 1], "CHIP48_SUPERCHIP") == 0) {
+      } else if (strcmp(argv[i + 1], "CHIP48_SCHIP") == 0) {
         flags->version = CHIP48_SCHIP;
       } else {
         SDL_Log("Unrecognized chip8 version \"%s\" provided", argv[i + 1]);

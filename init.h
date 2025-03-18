@@ -9,6 +9,8 @@
 #define INSNS_FLAG "--insns-per-sec"
 #define VERSION_FLAG "--v"
 
+#define FONT_ENTRYPOINT 0x050
+
 // Used to differentiate between different versions of chip8 (quirks)
 typedef enum {
   UNINITIALIZED,

@@ -8,7 +8,8 @@
         "render.h": "c",
         "init.h": "c",
         "chip8.h": "c",
-        "sdl.h": "c"
+        "sdl.h": "c",
+        "cycle.h": "c"
     },
     "makefile.configureOnOpen": true
 }
